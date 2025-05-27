@@ -187,6 +187,14 @@
             </select>
         </div>
         <div class="form-group">
+            <label for="sides">จำนวนด้านของป้าย:</label>
+            <select id="sides">
+                <option value="1">1 ด้าน</option>
+                <option value="2">2 ด้าน</option>
+                <option value="3">3 ด้าน</option>
+            </select>
+        </div>
+        <div class="form-group">
             <label for="installMonth">เดือนที่ติดตั้ง/เริ่มแสดงป้าย (สำหรับปีแรก):</label>
             <select id="installMonth">
                 <option value="1">มกราคม - มีนาคม (100%)</option>
@@ -225,7 +233,7 @@
             </ul>
         </ul>
         <p>
-            **หมายเหตุ:** หากคำนวณค่าภาษีป้ายได้ต่ำกว่า 200 บาท ให้เสียภาษีป้ายละ 200 บาท (อัตราขั้นต่ำ)
+            **หมายเหตุ:** หากคำนวณค่าภาษีป้ายได้ต่ำกว่า 200 บาทต่อด้าน ให้เสียภาษีป้ายละ 200 บาทต่อด้าน (อัตราขั้นต่ำ)
         </p>
         <h3>การคำนวณสำหรับป้ายที่ติดตั้งปีแรก:</h3>
         <p>สำหรับป้ายที่เริ่มติดตั้งหรือแสดงในปีแรก ให้คิดภาษีป้ายเป็นรายงวด งวดละ 3 เดือนของปี โดยเริ่มเสียภาษีป้ายตั้งแต่วันที่ติดตั้งป้ายจนถึงงวดสุดท้ายของปี ดังนี้:</p>
@@ -247,12 +255,13 @@
             const width = parseFloat(document.getElementById('width').value);
             const height = parseFloat(document.getElementById('height').value);
             const signType = document.getElementById('signType').value;
+            const sides = parseInt(document.getElementById('sides').value);
             const installMonth = parseInt(document.getElementById('installMonth').value);
             const resultDiv = document.getElementById('result');
 
             // ตรวจสอบค่าที่กรอกเข้ามา
-            if (isNaN(width) || isNaN(height) || width <= 0 || height <= 0 || signType === "") {
-                resultDiv.textContent = "กรุณากรอกข้อมูลความกว้าง ความสูง และเลือกประเภทป้ายให้ครบถ้วนและถูกต้อง";
+            if (isNaN(width) || isNaN(height) || width <= 0 || height <= 0 || signType === "" || isNaN(sides)) {
+                resultDiv.textContent = "กรุณากรอกข้อมูลความกว้าง ความสูง เลือกประเภทป้าย และจำนวนด้านให้ครบถ้วนและถูกต้อง";
                 return;
             }
 
@@ -307,10 +316,13 @@
 
             calculatedTax = calculatedTax * taxRateMultiplier;
 
-            // ตรวจสอบอัตราภาษีขั้นต่ำ (200 บาท)
+            // ตรวจสอบอัตราภาษีขั้นต่ำ (200 บาทต่อด้าน)
             if (calculatedTax < 200) {
                 calculatedTax = 200;
             }
+
+            // คูณด้วยจำนวนด้าน
+            calculatedTax = calculatedTax * sides;
 
             // แสดงผลลัพธ์
             resultDiv.textContent = `ภาษีป้ายที่ต้องชำระ: ${calculatedTax.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท`;
