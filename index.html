@@ -7,30 +7,27 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0; /* ลบ margin เริ่มต้นของ body */
+            margin: 0;
             background-color: #f4f4f4;
             color: #333;
-            min-height: 100vh; /* เพื่อให้เนื้อหามีความสูงเพียงพอให้เห็นลายน้ำ */
-            position: relative; /* สำคัญสำหรับตำแหน่งของลายน้ำ */
+            min-height: 100vh;
+            position: relative;
         }
-        
-        /* สไตล์สำหรับลายน้ำ */
         .watermark {
-            position: fixed; /* ให้อยู่กับที่ ไม่เลื่อนตามเนื้อหา */
+            position: fixed;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%); /* จัดกึ่งกลางเป๊ะ */
-            pointer-events: none; /* ทำให้ไม่สามารถคลิกหรือเลือกได้ */
-            opacity: 0.08; /* ความโปร่งแสงของลายน้ำ (ปรับได้ตามต้องการ) */
-            z-index: -1; /* ให้อยู่ด้านหลังเนื้อหาหลัก */
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            opacity: 0.08;
+            z-index: -1;
             background-image: url('https://www.jedeekham.go.th/src/assets/images/logo/180pix_logo-jedeekham.png');
             background-repeat: no-repeat;
             background-position: center;
-            background-size: 300px; /* ขนาดของลายน้ำ (ปรับได้ตามต้องการ) */
+            background-size: 300px;
             width: 100%;
             height: 100%;
         }
-
         .sticky-header {
             background-color: #fff;
             padding: 15px 0;
@@ -40,22 +37,19 @@
             z-index: 100;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
-            /* เพิ่ม display: flex, flex-direction, align-items, justify-content เพื่อจัดเรียงองค์ประกอบในแนวตั้งและกึ่งกลาง */
             display: flex;
-            flex-direction: column; /* จัดเรียงองค์ประกอบลูกในแนวตั้ง */
-            align-items: center; /* จัดกึ่งกลางตามแนวนอน */
-            justify-content: center; /* จัดกึ่งกลางตามแนวตั้ง (ถ้ามีพื้นที่เพียงพอ) */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
         .sticky-header .header-content {
-            /* ไม่จำเป็นต้องซ่อน logo-container แล้ว แต่จะย้าย img เข้ามาตรงนี้แทน */
-            /* เพิ่ม display: flex และ align-items เพื่อให้โลโก้และข้อความอยู่บรรทัดเดียวกัน */
             display: flex;
-            flex-direction: column; /* จัดเรียงโลโก้และข้อความในแนวตั้ง */
-            align-items: center; /* จัดกึ่งกลางตามแนวนอน */
-            gap: 10px; /* ระยะห่างระหว่างโลโก้และข้อความ */
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
         }
-        .sticky-header img.header-logo { /* กำหนด class ใหม่สำหรับโลโก้ใน header */
-            max-width: 80px; /* ปรับขนาดโลโก้ให้เล็กลง */
+        .sticky-header img.header-logo {
+            max-width: 80px;
             height: auto;
             border-radius: 50%;
             padding: 1px;
@@ -63,15 +57,14 @@
             border: 1px solid #ddd;
         }
         .sticky-header h1 {
-            margin: 0; /* ลบ margin เริ่มต้นของ h1 */
-            font-size: 1.8em; /* ปรับขนาดข้อความหัวข้อ */
+            margin: 0;
+            font-size: 1.8em;
         }
-        .sticky-header .subtitle { /* เพิ่ม class สำหรับข้อความรอง */
+        .sticky-header .subtitle {
             margin-top: 5px;
             font-size: 0.9em;
             color: #666;
         }
-
         .container {
             max-width: 800px;
             margin: 0 auto;
@@ -79,8 +72,8 @@
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            position: relative; /* สำคัญเพื่อให้เนื้อหาอยู่เหนือลายน้ำ */
-            z-index: 1; /* ทำให้เนื้อหาอยู่ด้านหน้าลายน้ำ */
+            position: relative;
+            z-index: 1;
         }
         h1, h2 {
             color: #0056b3;
@@ -141,8 +134,6 @@
             border-radius: 4px;
             margin-bottom: 20px;
         }
-
-        /* Responsive adjustments */
         @media (max-width: 600px) {
             .input-group {
                 flex-direction: column;
@@ -289,8 +280,13 @@
                     return;
             }
 
-            // คำนวณจำนวนหน่วย (ปัดเศษขึ้น)
-            let units = Math.ceil(area / 500); 
+            // คำนวณจำนวนหน่วย (ปัดเศษตามเงื่อนไข: >= 0.5 ปัดขึ้น, < 0.5 ปัดลง)
+            const unitsFloat = area / 500;
+            const fractionalPart = unitsFloat - Math.floor(unitsFloat);
+            let units = Math.floor(unitsFloat);
+            if (fractionalPart >= 0.5) {
+                units = Math.ceil(unitsFloat);
+            }
             let calculatedTax = units * taxPer500SqCm;
 
             // การปรับลดตามเดือนที่ติดตั้งสำหรับปีแรก
