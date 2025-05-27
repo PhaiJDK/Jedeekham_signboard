@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คำนวณภาษีป้าย</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0; /* ลบ margin เริ่มต้นของ body */
+            background-color: #f4f4f4;
+            color: #333;
+            min-height: 100vh; /* เพื่อให้เนื้อหามีความสูงเพียงพอให้เห็นลายน้ำ */
+            position: relative; /* สำคัญสำหรับตำแหน่งของลายน้ำ */
+        }
+        
+        /* สไตล์สำหรับลายน้ำ */
+        .watermark {
+            position: fixed; /* ให้อยู่กับที่ ไม่เลื่อนตามเนื้อหา */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* จัดกึ่งกลางเป๊ะ */
+            pointer-events: none; /* ทำให้ไม่สามารถคลิกหรือเลือกได้ */
+            opacity: 0.08; /* ความโปร่งแสงของลายน้ำ (ปรับได้ตามต้องการ) */
+            z-index: -1; /* ให้อยู่ด้านหลังเนื้อหาหลัก */
+            background-image: url('https://www.jedeekham.go.th/src/assets/images/logo/180pix_logo-jedeekham.png');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 300px; /* ขนาดของลายน้ำ (ปรับได้ตามต้องการ) */
+            width: 100%;
+            height: 100%;
+        }
+
+        .sticky-header {
+            background-color: #fff;
+            padding: 15px 0;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            /* เพิ่ม display: flex, flex-direction, align-items, justify-content เพื่อจัดเรียงองค์ประกอบในแนวตั้งและกึ่งกลาง */
+            display: flex;
+            flex-direction: column; /* จัดเรียงองค์ประกอบลูกในแนวตั้ง */
+            align-items: center; /* จัดกึ่งกลางตามแนวนอน */
+            justify-content: center; /* จัดกึ่งกลางตามแนวตั้ง (ถ้ามีพื้นที่เพียงพอ) */
+        }
+        .sticky-header .header-content {
+            /* ไม่จำเป็นต้องซ่อน logo-container แล้ว แต่จะย้าย img เข้ามาตรงนี้แทน */
+            /* เพิ่ม display: flex และ align-items เพื่อให้โลโก้และข้อความอยู่บรรทัดเดียวกัน */
+            display: flex;
+            flex-direction: column; /* จัดเรียงโลโก้และข้อความในแนวตั้ง */
+            align-items: center; /* จัดกึ่งกลางตามแนวนอน */
+            gap: 10px; /* ระยะห่างระหว่างโลโก้และข้อความ */
+        }
+        .sticky-header img.header-logo { /* กำหนด class ใหม่สำหรับโลโก้ใน header */
+            max-width: 80px; /* ปรับขนาดโลโก้ให้เล็กลง */
+            height: auto;
+            border-radius: 50%;
+            padding: 1px;
+            background-color: white;
+            border: 1px solid #ddd;
+        }
+        .sticky-header h1 {
+            margin: 0; /* ลบ margin เริ่มต้นของ h1 */
+            font-size: 1.8em; /* ปรับขนาดข้อความหัวข้อ */
+        }
+        .sticky-header .subtitle { /* เพิ่ม class สำหรับข้อความรอง */
+            margin-top: 5px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative; /* สำคัญเพื่อให้เนื้อหาอยู่เหนือลายน้ำ */
+            z-index: 1; /* ทำให้เนื้อหาอยู่ด้านหน้าลายน้ำ */
+        }
+        h1, h2 {
+            color: #0056b3;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .input-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: flex-end;
+        }
+        .input-group .form-item {
+            flex: 1;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="number"], select {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .input-group {
+                flex-direction: column;
+            }
+            input[type="number"], select {
+                width: 100%;
+            }
+            .container {
+                margin: 0 10px;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="watermark"></div> 
+    <div class="sticky-header">
+        <img src="https://www.jedeekham.go.th/src/assets/images/logo/180pix_logo-jedeekham.png" alt="โลโก้เจดีย์คำ" class="header-logo">
+        <h1>คำนวณภาษีป้าย</h1>
+        <p class="subtitle">องค์การบริหารส่วนตำบลเจดีย์คำ อ.เชียงคำ จ.พะเยา</p>
+    </div>
+
+    <div class="container">
+        <p class="info">
+            **หมายเหตุ:** การคำนวณนี้อ้างอิงตาม **พระราชบัญญัติภาษีป้าย พ.ศ. ๒๕๑๐** และกฎกระทรวงที่เกี่ยวข้อง 
+            ซึ่งมีผลบังคับใช้ตั้งแต่วันที่ 1 มกราคม 2564 ถึง 31 ธันวาคม 2566 
+            (ข้อมูลอัตราภาษีอาจมีการเปลี่ยนแปลงสำหรับปีถัดไป โปรดตรวจสอบอัตราปัจจุบันกับองค์กรปกครองส่วนท้องถิ่นที่ท่านจะชำระภาษีอีกครั้ง เพื่อความถูกต้องที่สุด)
+        </p>
+
+        <div class="input-group">
+            <div class="form-item">
+                <label for="width">ความกว้างป้าย (เซนติเมตร):</label>
+                <input type="number" id="width" min="0" placeholder="ระบุความกว้าง">
+            </div>
+            <div class="form-item">
+                <label for="height">ความสูงป้าย (เซนติเมตร):</label>
+                <input type="number" id="height" min="0" placeholder="ระบุความสูง">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="signType">ประเภทป้าย:</label>
+            <select id="signType">
+                <option value="">เลือกประเภทป้าย</option>
+                <option value="type1a">ประเภท 1 (ก) : อักษรไทยล้วน, ข้อความเคลื่อนที่/เปลี่ยนได้</option>
+                <option value="type1b">ประเภท 1 (ข) : อักษรไทยล้วน, ข้อความไม่เคลื่อนที่/เปลี่ยนไม่ได้</option>
+                <option value="type2a">ประเภท 2 (ก) : อักษรไทยปนต่างประเทศ/ภาพ/เครื่องหมาย, ข้อความเคลื่อนที่/เปลี่ยนได้</option>
+                <option value="type2b">ประเภท 2 (ข) : อักษรไทยปนต่างประเทศ/ภาพ/เครื่องหมาย, ข้อความไม่เคลื่อนที่/เปลี่ยนไม่ได้</option>
+                <option value="type3a">ประเภท 3 (ก) : ไม่มีอักษรไทย/อักษรไทยอยู่ต่ำกว่าต่างประเทศ, ข้อความเคลื่อนที่/เปลี่ยนได้</option>
+                <option value="type3b">ประเภท 3 (ข) : ไม่มีอักษรไทย/อักษรไทยอยู่ต่ำกว่าอักษรต่างประเทศ, ข้อความไม่เคลื่อนที่/เปลี่ยนไม่ได้</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="installMonth">เดือนที่ติดตั้ง/เริ่มแสดงป้าย (สำหรับปีแรก):</label>
+            <select id="installMonth">
+                <option value="1">มกราคม - มีนาคม (100%)</option>
+                <option value="2">เมษายน - มิถุนายน (75%)</option>
+                <option value="3">กรกฎาคม - กันยายน (50%)</option>
+                <option value="4">ตุลาคม - ธันวาคม (25%)</option>
+            </select>
+        </div>
+
+        <button onclick="calculateTax()">คำนวณภาษีป้าย</button>
+
+        <div class="result" id="result">
+            ภาษีป้ายที่ต้องชำระ: - บาท
+        </div>
+
+        <h2>ข้อมูลเพิ่มเติมเกี่ยวกับภาษีป้าย</h2>
+        <p>
+            **ภาษีป้าย** เป็นภาษีที่จัดเก็บจากป้ายแสดงชื่อ ยี่ห้อ หรือเครื่องหมายที่ใช้ในการประกอบการค้าหรือประกอบกิจการอื่นเพื่อหารายได้ หรือโฆษณาการค้าหรือกิจการอื่นเพื่อหารายได้ ไม่ว่าจะแสดงหรือโฆษณาไว้ที่วัตถุใดๆ ด้วยอักษร ภาพ หรือเครื่องหมายที่เขียน แกะสลัก จารึก หรือทำให้ปรากฏด้วยวิธีอื่น.
+        </p>
+        <h3>อัตราภาษีป้าย (อ้างอิงตามกฎกระทรวง มีผลบังคับใช้ 1 มกราคม 2564 ถึง 31 ธันวาคม 2566):</h3>
+        <ul>
+            <li>**ประเภท 1: ป้ายที่มีอักษรไทยล้วน**</li>
+            <ul>
+                <li>(ก) ป้ายที่มีข้อความที่เคลื่อนที่หรือเปลี่ยนเป็นข้อความอื่นได้: อัตรา 10 บาท ต่อ 500 ตารางเซนติเมตร</li>
+                <li>(ข) ป้ายนอกจาก (ก) (ไม่เคลื่อนที่/เปลี่ยนไม่ได้): อัตรา 5 บาท ต่อ 500 ตารางเซนติเมตร</li>
+            </ul>
+            <li>**ประเภท 2: ป้ายที่มีอักษรไทยปนกับอักษรต่างประเทศ และ/หรือปนกับภาพ และ/หรือเครื่องหมายอื่น**</li>
+            <ul>
+                <li>(ก) ป้ายที่มีข้อความ เครื่องหมาย หรือภาพที่เคลื่อนที่ หรือเปลี่ยนเป็นข้อความ เครื่องหมาย หรือภาพอื่นได้: อัตรา 52 บาท ต่อ 500 ตารางเซนติเมตร</li>
+                <li>(ข) ป้ายนอกจาก (ก) (ไม่เคลื่อนที่/เปลี่ยนไม่ได้): อัตรา 26 บาท ต่อ 500 ตารางเซนติเมตร</li>
+            </ul>
+            <li>**ประเภท 3: ป้ายดังต่อไปนี้**</li>
+            <ul>
+                <li>(ก) ไม่มีอักษรไทย ไม่ว่าจะมีภาพหรือเครื่องหมายใดๆ หรือไม่ หรือป้ายที่มีอักษรไทยบางส่วนหรือทั้งหมดอยู่ใต้หรือต่ำกว่าอักษรต่างประเทศ: อัตรา 52 บาท ต่อ 500 ตารางเซนติเมตร</li>
+                <li>(ข) ป้ายนอกจาก (ก) (ไม่เคลื่อนที่/เปลี่ยนไม่ได้): อัตรา 50 บาท ต่อ 500 ตารางเซนติเมตร</li>
+            </ul>
+        </ul>
+        <p>
+            **หมายเหตุ:** หากคำนวณค่าภาษีป้ายได้ต่ำกว่า 200 บาท ให้เสียภาษีป้ายละ 200 บาท (อัตราขั้นต่ำ)
+        </p>
+        <h3>การคำนวณสำหรับป้ายที่ติดตั้งปีแรก:</h3>
+        <p>สำหรับป้ายที่เริ่มติดตั้งหรือแสดงในปีแรก ให้คิดภาษีป้ายเป็นรายงวด งวดละ 3 เดือนของปี โดยเริ่มเสียภาษีป้ายตั้งแต่วันที่ติดตั้งป้ายจนถึงงวดสุดท้ายของปี ดังนี้:</p>
+        <ul>
+            <li>ติดตั้งระหว่าง มกราคม – มีนาคม: เสียภาษี 100%</li>
+            <li>ติดตั้งระหว่าง เมษายน – มิถุนายน: เสียภาษี 75%</li>
+            <li>ติดตั้งระหว่าง กรกฎาคม – กันยายน: เสียภาษี 50%</li>
+            <li>ติดตั้งระหว่าง ตุลาคม – ธันวาคม: เสียภาษี 25%</li>
+        </ul>
+    </div>
+
+    <script>
+        function calculateTax() {
+            const width = parseFloat(document.getElementById('width').value);
+            const height = parseFloat(document.getElementById('height').value);
+            const signType = document.getElementById('signType').value;
+            const installMonth = parseInt(document.getElementById('installMonth').value);
+            const resultDiv = document.getElementById('result');
+
+            // ตรวจสอบค่าที่กรอกเข้ามา
+            if (isNaN(width) || isNaN(height) || width <= 0 || height <= 0 || signType === "") {
+                resultDiv.textContent = "กรุณากรอกข้อมูลความกว้าง ความสูง และเลือกประเภทป้ายให้ครบถ้วนและถูกต้อง";
+                return;
+            }
+
+            const area = width * height; // ตารางเซนติเมตร
+            let taxPer500SqCm = 0;
+            let taxRateMultiplier = 1; // สำหรับปรับลดตามเดือนที่ติดตั้ง
+
+            // กำหนดอัตราภาษีตามประเภทป้าย
+            switch (signType) {
+                case 'type1a':
+                    taxPer500SqCm = 10;
+                    break;
+                case 'type1b':
+                    taxPer500SqCm = 5;
+                    break;
+                case 'type2a':
+                    taxPer500SqCm = 52;
+                    break;
+                case 'type2b':
+                    taxPer500SqCm = 26;
+                    break;
+                case 'type3a':
+                    taxPer500SqCm = 52;
+                    break;
+                case 'type3b':
+                    taxPer500SqCm = 50;
+                    break;
+                default:
+                    resultDiv.textContent = "กรุณาเลือกประเภทป้ายที่ถูกต้อง";
+                    return;
+            }
+
+            // คำนวณจำนวนหน่วย (ปัดเศษขึ้น)
+            let units = Math.ceil(area / 500); 
+            let calculatedTax = units * taxPer500SqCm;
+
+            // การปรับลดตามเดือนที่ติดตั้งสำหรับปีแรก
+            if (installMonth === 1) { // ม.ค. - มี.ค.
+                taxRateMultiplier = 1;
+            } else if (installMonth === 2) { // เม.ย. - มิ.ย.
+                taxRateMultiplier = 0.75;
+            } else if (installMonth === 3) { // ก.ค. - ก.ย.
+                taxRateMultiplier = 0.50;
+            } else if (installMonth === 4) { // ต.ค. - ธ.ค.
+                taxRateMultiplier = 0.25;
+            }
+
+            calculatedTax = calculatedTax * taxRateMultiplier;
+
+            // ตรวจสอบอัตราภาษีขั้นต่ำ (200 บาท)
+            if (calculatedTax < 200) {
+                calculatedTax = 200;
+            }
+
+            // แสดงผลลัพธ์
+            resultDiv.textContent = `ภาษีป้ายที่ต้องชำระ: ${calculatedTax.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท`;
+        }
+    </script>
+</body>
+</html>
